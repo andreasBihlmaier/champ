@@ -17,7 +17,7 @@ from launch.event_handlers.on_process_exit import OnProcessExit
 from launch.event_handlers.on_execution_complete import OnExecutionComplete
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import Command, LaunchConfiguration, NotSubstitution
 
 
 def generate_launch_description():
@@ -72,9 +72,15 @@ def generate_launch_description():
         description="Absolute path to gait config file",
     )
 
+    declare_hardware_connected = DeclareLaunchArgument(
+        "hardware_connected",
+        default_value="false",
+        description="Whether hardware is connected",
+    )
+
     declare_orientation_from_imu = DeclareLaunchArgument(
         "orientation_from_imu", default_value="false", description="Take orientation from IMU data"
-    )
+    )  # LaunchConfiguration("hardware_connected")
 
     declare_rviz = DeclareLaunchArgument(
         "rviz", default_value="false", description="Launch rviz"
@@ -102,14 +108,8 @@ def generate_launch_description():
 
     declare_joint_controller_topic = DeclareLaunchArgument(
         "joint_controller_topic",
-        default_value="joint_group_effort_controller/joint_trajectory",
+        default_value="joint_trajectory_controller/joint_trajectory",
         description="Joint controller topic",
-    )
-
-    declare_hardware_connected = DeclareLaunchArgument(
-        "joint_hardware_connected",
-        default_value="false",
-        description="Whether hardware is connected",
     )
 
     declare_publish_joint_control = DeclareLaunchArgument(
@@ -120,7 +120,8 @@ def generate_launch_description():
 
     declare_publish_joint_states = DeclareLaunchArgument(
         "publish_joint_states",
-        default_value="true",
+        default_value=NotSubstitution(
+            LaunchConfiguration("hardware_connected")),
         description="Publish joint states",
     )
 
@@ -161,11 +162,16 @@ def generate_launch_description():
         parameters=[
             {"use_sim_time": LaunchConfiguration("use_sim_time")},
             {"gazebo": LaunchConfiguration("gazebo")},
-            {"publish_joint_states": LaunchConfiguration("publish_joint_states")},
-            {"publish_joint_control": LaunchConfiguration("publish_joint_control")},
-            {"publish_foot_contacts": LaunchConfiguration("publish_foot_contacts")},
-            {"joint_controller_topic": LaunchConfiguration("joint_controller_topic")},
-            {"urdf": Command(['xacro ', LaunchConfiguration('description_path')])},
+            {"publish_joint_states": LaunchConfiguration(
+                "publish_joint_states")},
+            {"publish_joint_control": LaunchConfiguration(
+                "publish_joint_control")},
+            {"publish_foot_contacts": LaunchConfiguration(
+                "publish_foot_contacts")},
+            {"joint_controller_topic": LaunchConfiguration(
+                "joint_controller_topic")},
+            {"urdf": Command(
+                ['xacro ', LaunchConfiguration('description_path')])},
             LaunchConfiguration('joints_map_path'),
             LaunchConfiguration('links_map_path'),
             LaunchConfiguration('gait_config_path'),
@@ -179,8 +185,10 @@ def generate_launch_description():
         output="screen",
         parameters=[
             {"use_sim_time": LaunchConfiguration("use_sim_time")},
-            {"orientation_from_imu": LaunchConfiguration("orientation_from_imu")},
-            {"urdf": Command(['xacro ', LaunchConfiguration('description_path')])},
+            {"orientation_from_imu": LaunchConfiguration(
+                "orientation_from_imu")},
+            {"urdf": Command(
+                ['xacro ', LaunchConfiguration('description_path')])},
             LaunchConfiguration('joints_map_path'),
             LaunchConfiguration('links_map_path'),
             LaunchConfiguration('gait_config_path'),
@@ -229,9 +237,11 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         arguments=['-d', LaunchConfiguration("rviz_path")],
-        condition=IfCondition(LaunchConfiguration("rviz"))
+        condition=IfCondition(LaunchConfiguration("rviz")),
+        parameters=[
+            {"use_sim_time": LaunchConfiguration("use_sim_time")},
+        ],
     )
-
 
     return LaunchDescription(
         [
@@ -241,6 +251,7 @@ def generate_launch_description():
             declare_joints_map_path,
             declare_links_map_path,
             declare_gait_config_path,
+            declare_hardware_connected,
             declare_orientation_from_imu,
             declare_rviz,
             declare_rviz_ref_frame,
@@ -249,7 +260,6 @@ def generate_launch_description():
             declare_lite,
             declare_gazebo,
             declare_joint_controller_topic,
-            declare_hardware_connected,
             declare_publish_joint_control,
             declare_publish_joint_states,
             declare_publish_foot_contacts,
