@@ -8,16 +8,23 @@ find_package(rclcpp REQUIRED)
 find_package(urdf REQUIRED)
 find_package(champ REQUIRED)
 find_package(champ_msgs REQUIRED)
-find_package(gazebo_ros2_control REQUIRED)
-find_package(gazebo_ros REQUIRED)
+find_package(ign_ros2_control REQUIRED)
+find_package(ros_gz_sim REQUIRED)
+find_package(ignition-cmake2 REQUIRED)
+find_package(ignition-common4 REQUIRED)
+find_package(ignition-utils1 REQUIRED)
+find_package(ignition-math6 REQUIRED)
+find_package(ignition-msgs8 REQUIRED)
+find_package(ignition-gazebo6 REQUIRED)
+find_package(ignition-transport11 REQUIRED)
 
 set(dependencies
   rclcpp
   urdf
   champ
   champ_msgs
-  gazebo_ros2_control
-  gazebo_ros
+  ign_ros2_control
+  ros_gz_sim
 )
 
 install(PROGRAMS
@@ -29,14 +36,29 @@ install(PROGRAMS
 
 include_directories(
   include
+  ${IGNITION-CMAKE_INCLUDE_DIRS}
+  /usr/include/ignition/cmake2
+  ${IGNITION-COMMON_INCLUDE_DIRS}
+  ${IGNITION-UTILS_INCLUDE_DIRS}
+  ${IGNITION-MATH_INCLUDE_DIRS}
+  ${IGNITION-MSGS_INCLUDE_DIRS}
+  ${IGNITION-GAZEBO_INCLUDE_DIRS}
+  ${IGNITION-TRANSPORT_INCLUDE_DIRS}
   ${champ_INCLUDE_DIRS}
   ${champ_INCLUDE_DIRS}/champ/
   ${champ_INCLUDE_DIRS}/champ/champ/
-  ${GAZEBO_INCLUDE_DIRS}
 )
 
 add_executable(contact_sensor src/contact_sensor.cpp)
-target_link_libraries(contact_sensor ${GAZEBO_LIBRARIES})
+target_link_libraries(contact_sensor
+  ${IGNITION-CMAKE_LIBRARIES}
+  ${IGNITION-COMMON_LIBRARIES}
+  ${IGNITION-UTILS_LIBRARIES}
+  ${IGNITION-MATH_LIBRARIES}
+  ${IGNITION-MSGS_LIBRARIES}
+  ${IGNITION-GAZEBO_LIBRARIES}
+  ${IGNITION-TRANSPORT_LIBRARIES}
+)
 ament_target_dependencies(contact_sensor ${dependencies})
 
 install(TARGETS 

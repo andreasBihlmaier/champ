@@ -122,7 +122,6 @@ void QuadrupedController::cmdVelCallback_(const geometry_msgs::msg::Twist::Share
 
 void QuadrupedController::cmdPoseCallback_(const geometry_msgs::msg::Pose::SharedPtr msg)
 {   
-    
     tf2::Quaternion quat(
         msg->orientation.x,
         msg->orientation.y,
